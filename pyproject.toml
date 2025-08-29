@@ -1,0 +1,7 @@
+[project]
+name = "tareasgenerador"
+version = "0.1.0"
+description = "Use AI to recopilate tasks from your notes"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
