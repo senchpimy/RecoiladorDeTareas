@@ -6,7 +6,8 @@ import resumidor
 DIRECTORIO_POR_DEFECTO = "/home/plof/Documents/Actual/actual"
 DIAS_A_REVISAR = 7
 METADATA = "---\nprocesado_por_ia: true\n---\n\n"
-TESTING = True
+# TESTING = True
+TESTING = False
 
 
 def es_apunte_reciente_y_sin_procesar(ruta_archivo: str) -> bool:
@@ -83,14 +84,16 @@ def generar_informe(informes_procesados: list[str], directorio: str):
     if informes_procesados:
         print("\n\n".join(informes_procesados))
     else:
-        print(f"No se encontraron apuntes nuevos para procesar en '{directorio}'.")
+        print(f"No se encontraron apuntes nuevos para procesar en '{
+              directorio}'.")
 
 
 def main():
     directorio_base = DIRECTORIO_POR_DEFECTO
 
     if not os.path.isdir(directorio_base):
-        print(f"Error: El directorio base '{directorio_base}' no fue encontrado.")
+        print(f"Error: El directorio base '{
+              directorio_base}' no fue encontrado.")
         exit(1)
 
     informe_final_total = []
@@ -108,7 +111,8 @@ def main():
                 continue
 
             for ruta_archivo in archivos_a_procesar:
-                resumen = procesar_y_sellar_archivo(ruta_archivo, nombre_materia)
+                resumen = procesar_y_sellar_archivo(
+                    ruta_archivo, nombre_materia)
 
                 nombre_base = os.path.basename(ruta_archivo)
                 informe_final_total.append(

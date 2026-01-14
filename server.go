@@ -226,6 +226,17 @@ func main() {
 
 	log.Println("Servidor de horarios iniciado. Sirviendo en http://localhost:8080")
 
+	// Iniciar escáner de carpetas en segundo plano
+	go func() {
+		log.Println("Iniciando escáner de carpetas inicial...")
+		scanAndProcessDirectory(defaultScanDir)
+		ticker := time.NewTicker(1 * time.Hour)
+		for range ticker.C {
+			log.Println("Ejecutando escaneo periódico...")
+			scanAndProcessDirectory(defaultScanDir)
+		}
+	}()
+
 	corsHandler := func(h http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
