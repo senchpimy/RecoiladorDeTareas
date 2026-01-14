@@ -1,0 +1,14 @@
+[Unit]
+Description=Tareas Generador Service
+After=network.target
+
+[Service]
+ExecStart=
+WorkingDirectory=
+Restart=always
+User=plof
+# Group=plof # Uncomment and set if you want a specific group
+# EnvironmentFile=
+
+[Install]
+WantedBy=multi-user.target
