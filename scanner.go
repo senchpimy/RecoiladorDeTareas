@@ -128,7 +128,43 @@ func processFile(path string) {
 	tasks := extractTasks(content, filename, subject)
 
 	if tasks != "None" && tasks != "" {
-		appendTasksToFileModel(tasks)
+		lines := strings.Split(tasks, "\n")
+		for _, lineStr := range lines {
+			trimmed := strings.TrimSpace(lineStr)
+			if strings.HasPrefix(trimmed, "- [ ]") {
+				// Parse the task line to extract content, checked status, and completed_at
+				// This logic is similar to what was in loadFullFileStructure and appendTasksToFileModel
+				content := strings.TrimPrefix(trimmed, "- [ ]")
+				content = strings.TrimSpace(content)
+
+				// Extract completed_at if present in the format @{YYYY-MM-DD HH:MM:SS}
+				var completedAt *time.Time
+				if dateIndex := strings.LastIndex(content, " @{"); dateIndex != -1 && strings.HasSuffix(content, "}") {
+					dateStr := content[dateIndex+3 : len(content)-1]
+					if t, err := time.Parse(TimeFormat, dateStr); err == nil {
+						completedAt = &t
+					}
+					content = strings.TrimSpace(content[:dateIndex])
+				}
+
+				p := Pendiente{
+					Text:        content,
+					Checked:     false, // Newly extracted tasks are unchecked by default
+					CompletedAt: completedAt,
+				}
+
+				// Use the mutex defined in server.go to protect DB access
+				mutex.Lock()
+				err = insertTaskIntoDB(p)
+				mutex.Unlock()
+
+				if err != nil {
+					log.Printf("Error al insertar tarea '%s' en la DB: %v", p.Text, err)
+				} else {
+					log.Printf("Tarea insertada: %s", p.Text)
+				}
+			}
+		}
 		markFileAsProcessed(path, content)
 	} else if tasks == "None" {
 		log.Printf("No se encontraron tareas en %s. Marcando como procesado.", filename)
@@ -254,34 +290,7 @@ Si no hay tareas, responde "None".`},
 	return ollamaResp.Message.Content
 }
 
-func appendTasksToFileModel(tasksText string) {
-	mutex.Lock()
-	defer mutex.Unlock()
 
-	lines := strings.Split(tasksText, "\n")
-	addedCount := 0
-	for _, lineStr := range lines {
-		trimmed := strings.TrimSpace(lineStr)
-		if strings.HasPrefix(trimmed, "- [ ]") {
-			content := strings.TrimPrefix(trimmed, "- [ ]")
-			content = strings.TrimSpace(content)
-
-			fl := FileLine{
-				IsTask:      true,
-				Checked:     false,
-				Content:     content,
-				Indentation: "",
-			}
-			fileModel = append(fileModel, fl)
-			addedCount++
-		}
-	}
-
-	if addedCount > 0 {
-		log.Printf("Añadidas %d tareas nuevas al modelo.", addedCount)
-		saveFileStructure()
-	}
-}
 
 func markFileAsProcessed(path, content string) {
 	newContent := metadataHeader + content
