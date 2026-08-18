@@ -64,7 +64,7 @@ func getTasksFromDB() ([]Pendiente, error) {
 	}
 	defer rows.Close()
 
-	var tasks []Pendiente
+	tasks := []Pendiente{}
 	for rows.Next() {
 		var p Pendiente
 		var completedAtStr sql.NullString
